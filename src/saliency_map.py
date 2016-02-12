@@ -12,7 +12,8 @@ from utils import Util
 
 
 class GaussianPyramid:
-    def __init__(self, src):
+    def __init__(self, src, n_layers=7):
+        self.n_layers = n_layers
         self.maps = self.__make_gaussian_pyramid(src)
 
     def __make_gaussian_pyramid(self, src):
@@ -22,7 +23,7 @@ class GaussianPyramid:
                 'orientations': {'0': [], '45': [], '90': [], '135': []}}
         amax = np.amax(src)
         b, g, r = cv.split(src)
-        for x in xrange(1, 9):
+        for x in xrange(1, self.n_layers + 2):
             b, g, r = map(cv.pyrDown, [b, g, r])
             if x < 2:
                 continue
@@ -111,8 +112,8 @@ class ConspicuityMap:
 
 
 class SaliencyMap:
-    def __init__(self, src):
-        self.gp = GaussianPyramid(src)
+    def __init__(self, src, n_pyr_layers=7):
+        self.gp = GaussianPyramid(src, n_layers=n_pyr_layers)
         self.fm = FeatureMap(self.gp.maps)
         self.cm = ConspicuityMap(self.fm.maps)
         self.map = cv.resize(self.__make_saliency_map(self.cm.maps), tuple(reversed(src.shape[0:2])))
